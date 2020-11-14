@@ -523,21 +523,20 @@ export default <V extends FormValues = FormValues>({
 
   const getFieldValue = useCallback(
     (field: FieldElement) => {
-      const { name, value } = field;
-      let val: any = value;
+      let val: any = field.value;
 
       if (isNumberField(field) || isRangeField(field)) {
-        val = parseFloat(value) || "";
+        val = parseFloat(val) ?? "";
       } else if (isCheckboxField(field)) {
-        let checkValues = get(stateRef.current.values, name);
+        let checkValues = get(stateRef.current.values, field.name);
 
         if (isArray(checkValues)) {
           checkValues = new Set(checkValues);
 
           if (field.checked) {
-            checkValues.add(value);
+            checkValues.add(val);
           } else {
-            checkValues.delete(value);
+            checkValues.delete(val);
           }
 
           val = Array.from(checkValues);
@@ -589,36 +588,28 @@ export default <V extends FormValues = FormValues>({
       return {
         name,
         value: !isUndefined(value) ? value : getState(`values.${name}`),
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        onChange: useCallback(
-          (e) => {
-            const parsedE = parser ? parser(e) : e;
+        onChange: (e) => {
+          const parsedE = parser ? parser(e) : e;
 
-            if (
-              parsedE.nativeEvent instanceof Event &&
-              isFieldElement(parsedE.target)
-            ) {
-              handleFieldChange(parsedE.target);
-              if (onChange) onChange(e, getFieldValue(parsedE.target));
-            } else {
-              setFieldValue(name, parsedE);
-              if (onChange) onChange(e);
-            }
-          },
-          [parser, name, onChange]
-        ),
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        onBlur: useCallback(
-          (e) => {
-            setFieldTouched(
-              name,
-              (validateOnChange && name !== changedFieldRef.current) ||
-                validateOnBlur
-            );
-            if (onBlur) onBlur(e);
-          },
-          [name, onBlur]
-        ),
+          if (
+            parsedE.nativeEvent instanceof Event &&
+            isFieldElement(parsedE.target)
+          ) {
+            handleFieldChange(parsedE.target);
+            if (onChange) onChange(e, getFieldValue(parsedE.target));
+          } else {
+            setFieldValue(name, parsedE);
+            if (onChange) onChange(e);
+          }
+        },
+        onBlur: (e) => {
+          setFieldTouched(
+            name,
+            (validateOnChange && name !== changedFieldRef.current) ||
+              validateOnBlur
+          );
+          if (onBlur) onBlur(e);
+        },
       };
     },
     [
