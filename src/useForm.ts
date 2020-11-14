@@ -157,7 +157,7 @@ export default <V extends FormValues = FormValues>({
   }, []);
 
   const setAllNodesValue = useCallback(
-    (values: V = initialStateRef.current.values) =>
+    (values: V) =>
       Object.values(fieldsRef.current).forEach(({ field }) =>
         setNodeValue(field.name, get(values, field.name))
       ),
@@ -632,7 +632,7 @@ export default <V extends FormValues = FormValues>({
     }
 
     fieldsRef.current = getFields(formRef.current);
-    setAllNodesValue();
+    setAllNodesValue(initialStateRef.current.values);
   }, [setAllNodesValue]);
 
   useEffect(() => {
